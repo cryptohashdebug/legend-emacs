@@ -1,0 +1,7 @@
+*.elc
+elpa/
+auto-save-list/
+*.autosaves
+eln-cache/
+#*
+.#*
