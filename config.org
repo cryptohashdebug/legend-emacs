@@ -1,0 +1,5 @@
+#+STARTUP: overview
+#+TITLE: Legen
+#+LANGUAGE: es
+#+OPTIONS: num:nil
+El legendario Emacs
