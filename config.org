@@ -6,7 +6,7 @@
 
 ** Initialize =dashboard=
 *** Description
-Una descrippcion
+Esta seccion configura el dashboard con una imagena y algunos botones
 *** Code
 #+BEGIN_SRC emacs-lisp
   (use-package dashboard
@@ -14,74 +14,75 @@ Una descrippcion
     :defer nil
     :preface
     (defun update-config ()
-      "Update Witchmacs to the latest version."
+      "Actualizando Legend a la ultima version, desde el Dashboard"
       (interactive)
       (let ((dir (expand-file-name user-emacs-directory)))
-        (if (file-exists-p dir)
-            (progn
-              (message "Witchmacs is updating!")
-              (cd dir)
-              (shell-command "git pull")
-              (message "Update finished. Switch to the messages buffer to see changes and then restart Emacs"))
-          (message "\"%s\" doesn't exist." dir))))
+	(if (file-exists-p dir)
+	    (progn
+	      (message "Legend esta actualizando!")
+	      (cd dir)
+	      (shell-command "git pull")
+	      (message "Actualizacion terminada. Switch to the messages buffer to see changes and then restart Emacs"))
+	  (message "\"%s\" doesn't exist." dir))))
 
     (defun create-scratch-buffer ()
-      "Create a scratch buffer"
+      "Create a scratch buffer, se usa en el Dashboard"
       (interactive)
       (switch-to-buffer (get-buffer-create "*scratch*"))
       (lisp-interaction-mode))
     :config
+
     (dashboard-setup-startup-hook)
     (setq dashboard-items '((recents . 5)))
-    (setq dashboard-banner-logo-title "W I T C H M A C S - The cutest Emacs distribution!")
-    (setq dashboard-startup-banner "~/.emacs.d/marivector.png")
+    (setq dashboard-startupify-list '(dashboard-insert-banner                                  
+                                  dashboard-insert-banner-title
+                                  dashboard-insert-navigator
+                                  dashboard-insert-init-info
+                                  dashboard-insert-items
+                                  dashboard-insert-footer))
+    (setq dashboard-banner-logo-title "L e g e n d - The cutest Emacs distribution!")
+    (setq dashboard-image-banner-max-width 200)
+    (setq dashboard-startup-banner "~/.emacs.d/banner.png")
+
     (setq dashboard-center-content t)
+    ;;(setq dashboard-vertically-center-content t)
     (setq dashboard-show-shortcuts nil)
     (setq dashboard-set-init-info t)
     (setq dashboard-init-info (format "%d packages loaded in %s"
-                                      (length package-activated-list) (emacs-init-time)))
+				      (length package-activated-list) (emacs-init-time)))
     (setq dashboard-set-footer nil)
     (setq dashboard-set-navigator t)
     (setq dashboard-navigator-buttons
-          `(;; line1
-            ((,nil
-              "Witchmacs on github"
-              "Open Witchmacs' github page on your browser"
-              (lambda (&rest _) (browse-url "https://github.com/snackon/witchmacs"))
-              'default)
-             (nil
-              "Witchmacs crash course"
-              "Open Witchmacs' introduction to Emacs"
-              (lambda (&rest _) (find-file "~/.emacs.d/Witcheat.org"))
-              'default)
-             (nil
-              "Update Witchmacs"
-              "Get the latest Witchmacs update. Check out the github commits for changes!"
-              (lambda (&rest _) (update-config))
-              'default)
-             )
-            ;; line 2
-            ((,nil
-              "Open scratch buffer"
-              "Switch to the scratch buffer"
-              (lambda (&rest _) (create-scratch-buffer))
-              'default)
-             (nil
-              "Open config.org"
-              "Open Witchmacs' configuration file for easy editing"
-              (lambda (&rest _) (find-file "~/.emacs.d/config.org"))
-              'default)))))
+	  `(;; line1
+	    ((,nil
+	      "Legend on github"
+	      "Open Legend' github page on your browser"
+	      (lambda (&rest _) (browse-url "https://github.com/snackon/Legend"))
+	      'default)
+	     (nil
+	      "Legend crash course"
+	      "Open Legend' introduction to Emacs"
+	      (lambda (&rest _) (find-file "~/.emacs.d/Witcheat.org"))
+	      'default)
+	     (nil
+	      "Update Legend"
+	      "Obtén la última actualización de Legend. ¡Consulta los cambios en GitHub!"
+	      (lambda (&rest _) (update-config))
+	      'default)
+	     )
+	    ;; line 2
+	    ((,nil
+	      "Open scratch buffer"
+	      "Switch to the scratch buffer"
+	      (lambda (&rest _) (create-scratch-buffer))
+	      'default)
+	     (nil
+	      "Open config.org"
+	      "Open Legend' configuration file for easy editing"
+	      (lambda (&rest _) (find-file "~/.emacs.d/config.org"))
+	      'default)))))
 #+END_SRC
 *** Notes
-If you pay close attention to the code in dashboard, you'll  notice that it uses custom functions defined under the :preface use-package block. I wrote all of those functions by looking at other people's Emacs distributions (Mainly [[https://github.com/seagle0128/.emacs.d][Centaur Emacs]]) and then experimenting and adapting them to Witchmacs. If you dig around, you'll find the same things I did - maybe even more!
-*** Historical
-22/05/19: On this day, the main maintainers of the dashboard package have added built-in fuinctionality to display init and package load time, thing that I already had implemented much earlier on my own. I have left here my implementation for historical purposes
-#+BEGIN_SRC emacs-lisp
-  ;(insert (concat
-  ;         (propertize (format "%d packages loaded in %s"
-  ;                             (length package-activated-list) (emacs-init-time))
-  ;                     'face 'font-lock-comment-face)))
-  ;
-  ;(dashboard-center-line)
-#+END_SRC 
+Si prestas atención al código del panel, notarás que usa funciones personalizadas definidas en el bloque :preface use-package. Escribí todas esas funciones consultando distribuciones de Emacs de otros usuarios (principalmente [[https://github.com/snackon/Witchmacs][Witchmacs]]) y luego experimentándolas y adaptándolas a Legend. Si investigas, encontrarás lo mismo que yo, ¡quizás incluso más!
+
 
