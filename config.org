@@ -1,13 +1,150 @@
 #+STARTUP: overview
 #+TITLE: Legend
+#+AUTHOR: Yurizan Perez Feranandez
 #+LANGUAGE: es
+#+DATE: <2026-02-21 Sat>
 #+OPTIONS: num:nil
-*El legendario Emacs
+* Introducción
+Este archivo contiene mi configuración principal de Emacs en formato Org-mode.
 
-** Initialize =dashboard=
-*** Description
+* El legendario Emacs
+
+* TODO Configuración básica
+
+** Variables
+Varias inicializaciones
+
+#+BEGIN_SRC emacs-lisp
+  ;; Hace a Emacs mas rapido
+  (setq gc-cons-threshold 402653184
+        gc-cons-percentage 0.6)
+
+  (setq inhibit-startup-message t)   ;; Ocultar pantalla de inicio
+  (setq ring-bell-function 'ignore)  ;; Desactivar sonido de campana
+
+  ;; Lista de fuentes con sus paquetes en Debian, Arch y Fedora
+(setq my/fonts-and-packages
+      '(("Fira Code Retina" . ("fonts-firacode" . ("ttf-fira-code" . "fira-code-fonts")))
+        ("JetBrains Mono"   . ("fonts-jetbrains-mono" . ("ttf-jetbrains-mono" . "jetbrains-mono-fonts")))
+        ("Noto Sans Mono"   . ("fonts-noto-mono" . ("noto-fonts" . "google-noto-sans-mono-fonts")))
+        ("DejaVu Sans Mono" . ("fonts-dejavu" . ("ttf-dejavu" . "dejavu-sans-mono-fonts")))))
+#+END_SRC
+
+* Paquetes
+** TODO Instalar paquetes esenciales
+
+#+BEGIN_SRC emacs-lisp
+  ;; Initialize melpa repo solo si se conecta, si se conecta.
+  (require 'package)
+  (setq package-enable-at-startup nil)
+  ;(add-to-list 'package-archives
+  ;        '("melpa" . "https://melpa.org/packages/"))
+  (let ((melpa-url "https://melpa.org/packages/"))
+  (when (condition-case nil
+  (with-current-buffer (url-retrieve-synchronously melpa-url t t 5)
+  (goto-char (point-min))
+  (search-forward "HTTP/1.1 200" nil t))
+  (error nil))
+  (add-to-list 'package-archives (cons "melpa" melpa-url) t)))
+  (package-initialize)
+#+END_SRC
+
+** DONE Configurar use-package
+#+BEGIN_SRC emacs-lisp
+  ;; Initialize use-package
+  (unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+#+END_SRC
+
+** Funciones útiles
+Esta seccion contiene funciones utiles que se usaran posteriormente
+
+*** Fuentes en el sistema
+Funciones utiles para determinar si una fuente en particulas esta instalada en
+el sistema, para instalar las fuentes  
+#+BEGIN_SRC emacs-lisp
+  (defun my/font-available-p (font-name)
+    "Devuelve t si FONT-NAME está instalada en el sistema."
+    (find-font (font-spec :name font-name)))
+
+  (defun my/install-font (package-name-debian package-name-arch package-name-fedora)
+    "Instala un paquete de fuente usando apt-get, pacman o dnf según la distro."
+    (cond
+     ((my/debian-based-p)
+      (shell-command
+       (format "sudo apt-get install -y %s" package-name-debian)))
+     ((my/arch-based-p)
+      (shell-command
+       (format "sudo pacman -S --noconfirm %s" package-name-arch)))
+     ((my/fedora-based-p)
+      (shell-command
+       (format "sudo dnf install -y %s" package-name-fedora)))))
+  
+  (defun my/install-font-with-apt (package-name)
+  "Instala un paquete de fuente usando apt-get."
+  (shell-command
+   (format "sudo apt-get install -y %s" package-name)))
+#+END_SRC
+
+*** Donde Estamos
+Funciones utiles para determinar el sistema en el que trabajamos
+
+#+BEGIN_SRC emacs-lisp
+  (defun my/debian-based-p ()
+    "Devuelve t si el sistema parece ser Debian/Ubuntu."
+    (and (eq system-type 'gnu/linux)
+         (file-exists-p "/etc/debian_version")))
+
+  (defun my/arch-based-p ()
+    "Devuelve t si el sistema parece ser Arch Linux."
+    (and (eq system-type 'gnu/linux)
+         (file-exists-p "/etc/arch-release")))
+
+  (defun my/fedora-based-p ()
+    "Devuelve t si el sistema parece ser Fedora."
+    (and (eq system-type 'gnu/linux)
+         (file-exists-p "/etc/fedora-release")))  
+#+END_SRC
+
+** Apariencia
+#+BEGIN_SRC emacs-lisp
+  (load-theme 'tango-dark t)         ;; Tema oscuro
+  ;;(set-frame-font "Fira Code-12" t)  ;; Fuente
+
+     ;; Configuración de fuente con verificación e instalación
+  (let ((preferred-font "Fira Code Retina")
+        (preferred-package "fonts-firacode")
+        (fallback-font "DejaVu Sans Mono"))
+    (if (my/font-available-p preferred-font)
+        ;; Si la fuente está disponible, usarla
+        (set-face-attribute 'default nil :font preferred-font :height 120)
+      ;; Si no está disponible, intentar instalarla y usar fallback
+      (progn
+        (message "La fuente %s no está instalada. Intentando instalar..." preferred-font)
+        (my/install-font-with-apt preferred-package)
+        (if (my/font-available-p preferred-font)
+            (set-face-attribute 'default nil :font preferred-font :height 120)
+          (set-face-attribute 'default nil :font fallback-font :height 120)))))
+
+    ;; Si ninguna fuente se pudo usar, aplicar fallback genérico
+    (unless (find-font (font-spec :name "DejaVu Sans Mono"))
+      (set-face-attribute 'default nil :font "Monospace" :height 120)
+      (message "Usando fallback genérico: Monospace"))
+    
+#+END_SRC
+
+* Atajos de teclado
+** TODO Definir accesos rápidos
+#+BEGIN_SRC emacs-lisp
+  (global-set-key (kbd "C-x C-b") 'ibuffer) ;; Mejor gestor de buffers
+  (global-set-key (kbd "M-o") 'other-window) ;; Cambiar ventana
+#+END_SRC
+
+* Initialize =dashboard=
+** Description
 Esta seccion configura el dashboard con una imagena y algunos botones
-*** Code
+** Code
 #+BEGIN_SRC emacs-lisp
   (use-package dashboard
     :ensure t
@@ -86,3 +223,7 @@ Esta seccion configura el dashboard con una imagena y algunos botones
 Si prestas atención al código del panel, notarás que usa funciones personalizadas definidas en el bloque :preface use-package. Escribí todas esas funciones consultando distribuciones de Emacs de otros usuarios (principalmente [[https://github.com/snackon/Witchmacs][Witchmacs]]) y luego experimentándolas y adaptándolas a Legend. Si investigas, encontrarás lo mismo que yo, ¡quizás incluso más!
 
 
+* Notas
+#+BEGIN_QUOTE
+Recuerda ejecutar =org-babel-tangle= para exportar esta configuración a init.el.
+#+END_QUOTE
