@@ -7,3 +7,5 @@ auto-save-list/
 eln-cache/
 #*
 .#*
+/autocomf.el
+/ede-projects.el
