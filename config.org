@@ -4,72 +4,88 @@
 #+LANGUAGE: es
 #+DATE: <2026-02-21 Sat>
 #+OPTIONS: num:nil
-* Introducci�n
-Este archivo contiene mi configuraci�n principal de Emacs en formato Org-mode.
+* Introducción
+Este archivo contiene mi configuración principal de Emacs en
+formato Org-mode.
 
 * El legendario Emacs
 
-* TODO Configuraci�n b�sica
+* TODO Configuración básica
+
+#+BEGIN_SRC emacs-lisp
+  ;;∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗
+  ;;∗∗∗∗∗∗∗∗∗∗∗ Codificación: UTF−8 ∗∗∗∗∗∗∗∗∗∗
+  ;;∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗
+  (prefer-coding-system 'utf-8)
+#+END_SRC
 
 ** Variables
 Varias inicializaciones
 
 #+BEGIN_SRC emacs-lisp
-  ;; Hace a Emacs mas rapido
-  (setq gc-cons-threshold 402653184
-        gc-cons-percentage 0.6)
+      ;; Hace a Emacs mas rapido
+         (setq gc-cons-threshold 402653184
+               gc-cons-percentage 0.6)
 
-  (setq inhibit-startup-message t)   ;; Ocultar pantalla de inicio
-  (setq ring-bell-function 'ignore)  ;; Desactivar sonido de campana
+      ;; Ocultar pantalla de inicio
+         (setq inhibit-startup-message t)   
 
-  ;; Lista de fuentes con sus paquetes en Debian, Arch y Fedora
-(setq my/fonts-and-packages
-      '(("Fira Code Retina" . ("fonts-firacode" . ("ttf-fira-code" . "fira-code-fonts")))
-        ("JetBrains Mono"   . ("fonts-jetbrains-mono" . ("ttf-jetbrains-mono" . "jetbrains-mono-fonts")))
-        ("Noto Sans Mono"   . ("fonts-noto-mono" . ("noto-fonts" . "google-noto-sans-mono-fonts")))
-        ("DejaVu Sans Mono" . ("fonts-dejavu" . ("ttf-dejavu" . "dejavu-sans-mono-fonts")))))
+      ;; Desactivar sonido de campana
+         (setq ring-bell-function 'ignore) 
+
+      ;; Lista de fuentes con sus paquetes en Debian, Arch y Fedora
+    (setq my/fonts-and-packages '(
+    ("Fira Code Retina" . ("fonts-firacode" . ("ttf-fira-code" . "fira-code-fonts")))
+    ("JetBrains Mono"   . ("fonts-jetbrains-mono" . ("ttf-jetbrains-mono" . "jetbrains-mono-fonts")))
+    ("Noto Sans Mono"   . ("fonts-noto-mono" . ("noto-fonts" . "google-noto-sans-mono-fonts")))
+    ("DejaVu Sans Mono" . ("fonts-dejavu" . ("ttf-dejavu" . "dejavu-sans-mono-fonts")))
+    ))
 #+END_SRC
 
 * Paquetes
 ** TODO Instalar paquetes esenciales
 
 #+BEGIN_SRC emacs-lisp
-  ;; Initialize melpa repo solo si se conecta, si se conecta.
-  (require 'package)
-  (setq package-enable-at-startup nil)
-  ;(add-to-list 'package-archives
-  ;        '("melpa" . "https://melpa.org/packages/"))
-  (let ((melpa-url "https://melpa.org/packages/"))
-  (when (condition-case nil
-  (with-current-buffer (url-retrieve-synchronously melpa-url t t 5)
-  (goto-char (point-min))
-  (search-forward "HTTP/1.1 200" nil t))
-  (error nil))
-  (add-to-list 'package-archives (cons "melpa" melpa-url) t)))
-  (package-initialize)
+        ;; Inicialice melpa repo solo si se conecta.
+        (require 'package)
+        (setq package-enable-at-startup nil)
+        ;(add-to-list 'package-archives
+        ;        '("melpa" . "https://melpa.org/packages/"))
+        (let ((melpa-url "https://melpa.org/packages/"))
+        (when (condition-case nil
+        	  (with-current-buffer
+      	      (url-retrieve-synchronously melpa-url t t 5)
+        	    (goto-char (point-min))
+        	    (search-forward "HTTP/1.1 200" nil t))
+        	(error nil))
+          (add-to-list 'package-archives
+  		     (cons "melpa" melpa-url) t)))
+        (package-initialize)
 #+END_SRC
 
 ** DONE Configurar use-package
 #+BEGIN_SRC emacs-lisp
   ;; Initialize use-package
   (unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
+    (package-refresh-contents)
+    (package-install 'use-package))
 #+END_SRC
 
-** Funciones �tiles
-Esta seccion contiene funciones utiles que se usaran posteriormente
+** Funciones Útiles
+Esta sección contiene funciones útiles que se usaran
+posteriormente
 
-*** Fuentes en el sistema
-Funciones utiles para determinar si una fuente en particulas esta instalada en
-el sistema, para instalar las fuentes  
+*** TODO Fuentes en el sistema
+Funciones útiles para determinar si una fuente en particular
+esta instalada en el sistema, e instalar las fuentes en caso
+contrario  
 #+BEGIN_SRC emacs-lisp
   (defun my/font-available-p (font-name)
-    "Devuelve t si FONT-NAME est� instalada en el sistema."
+    "Devuelve t si FONT-NAME esta instalada en el sistema."
     (find-font (font-spec :name font-name)))
 
   (defun my/install-font (package-name-debian package-name-arch package-name-fedora)
-    "Instala un paquete de fuente usando apt-get, pacman o dnf seg�n la distro."
+    "Instala un paquete de fuente usando apt-get, pacman o dnf segÃºn la distro."
     (cond
      ((my/debian-based-p)
       (shell-command
@@ -87,8 +103,8 @@ el sistema, para instalar las fuentes
    (format "sudo apt-get install -y %s" package-name)))
 #+END_SRC
 
-*** Donde Estamos
-Funciones utiles para determinar el sistema en el que trabajamos
+*** TODO Donde Estamos
+Funciones útiles para determinar el sistema en el que trabajamos
 
 #+BEGIN_SRC emacs-lisp
   (defun my/debian-based-p ()
@@ -107,123 +123,157 @@ Funciones utiles para determinar el sistema en el que trabajamos
          (file-exists-p "/etc/fedora-release")))  
 #+END_SRC
 
-** Apariencia
+* TODO Corrección ortográfica
+#+BEGIN_SRC emacs-lisp
+  (require 'ispell)
+  (setq ispell-program-name "aspell"
+    ispell-extra-args '("-W" "3")
+    ispell-dictionary-alist
+      (cons
+        '("spanish" "[[:alpha:]]" "[^[:alpha:]]" "['.-]"
+        nil ("-B" "-d" "es" ) nil utf-8)
+    ispell-dictionary-alist)
+  )
+  (set-default 'ispell-local-dictionary "spanish")
+  
+  (use-package flyspell
+  :hook ((text-mode . flyspell-mode)
+         (org-mode . flyspell-mode)
+         (prog-mode . flyspell-prog-mode)))
+#+END_SRC
+
+* Apariencia
 #+BEGIN_SRC emacs-lisp
   (load-theme 'tango-dark t)         ;; Tema oscuro
-  ;;(set-frame-font "Fira Code-12" t)  ;; Fuente
 
-     ;; Configuraci�n de fuente con verificaci�n e instalaci�n
+  ;; Configuración de fuente con verificación e instalación
   (let ((preferred-font "Fira Code Retina")
         (preferred-package "fonts-firacode")
         (fallback-font "DejaVu Sans Mono"))
     (if (my/font-available-p preferred-font)
-        ;; Si la fuente est� disponible, usarla
+        ;; Si la fuente esta disponible, usarla
         (set-face-attribute 'default nil :font preferred-font :height 120)
-      ;; Si no est� disponible, intentar instalarla y usar fallback
+      ;; Si no esta disponible, intentar instalarla y usar fallback
       (progn
-        (message "La fuente %s no est� instalada. Intentando instalar..." preferred-font)
+        (message "La fuente %s no esta instalada. Intentando instalar..." preferred-font)
         (my/install-font-with-apt preferred-package)
         (if (my/font-available-p preferred-font)
             (set-face-attribute 'default nil :font preferred-font :height 120)
           (set-face-attribute 'default nil :font fallback-font :height 120)))))
 
-    ;; Si ninguna fuente se pudo usar, aplicar fallback gen�rico
+    ;; Si ninguna fuente se pudo usar, aplicar fallback generico
     (unless (find-font (font-spec :name "DejaVu Sans Mono"))
       (set-face-attribute 'default nil :font "Monospace" :height 120)
-      (message "Usando fallback gen�rico: Monospace"))
+      (message "Usando fallback genérico: Monospace"))
     
 #+END_SRC
 
 * Atajos de teclado
-** TODO Definir accesos r�pidos
+** TODO Definir accesos rápidos
 #+BEGIN_SRC emacs-lisp
-  (global-set-key (kbd "C-x C-b") 'ibuffer) ;; Mejor gestor de buffers
-  (global-set-key (kbd "M-o") 'other-window) ;; Cambiar ventana
+  ;; Mejor gestor de buffers
+  (global-set-key (kbd "C-x C-b") 'ibuffer)
+  ;; Cambiar ventana
+  (global-set-key (kbd "M-o") 'other-window) 
 #+END_SRC
 
 * Initialize =dashboard=
-** Description
-Esta seccion configura el dashboard con una imagena y algunos botones
+** Descripción
+Esta sección configura el dashboard con una imagen y algunos
+botones
 ** Code
 #+BEGIN_SRC emacs-lisp
-  (use-package dashboard
-    :ensure t
-    :defer nil
-    :preface
-    (defun update-config ()
-      "Actualizando Legend a la ultima version, desde el Dashboard"
-      (interactive)
-      (let ((dir (expand-file-name user-emacs-directory)))
-	(if (file-exists-p dir)
-	    (progn
-	      (message "Legend esta actualizando!")
-	      (cd dir)
-	      (shell-command "git pull")
-	      (message "Actualizacion terminada. Switch to the messages buffer to see changes and then restart Emacs"))
-	  (message "\"%s\" doesn't exist." dir))))
+      (use-package dashboard
+        :ensure t
+        :defer nil
+        :preface
+        (defun update-config ()
+          "Actualizando Legend a la ultima version, desde el Dashboard"
+          (interactive)
+          (let ((dir (expand-file-name user-emacs-directory)))
+      	(if (file-exists-p dir)
+      	    (progn
+      	      (message "Legend esta actualizando!!")
+      	      (cd dir)
+      	      (shell-command "git pull")
+      	      (message "Actualizacion terminada. Vea los cambios en el buffer de mensajes y reinicie Emacs"))
+      	  (message "\"%s\" doesn't exist." dir))))
 
-    (defun create-scratch-buffer ()
-      "Create a scratch buffer, se usa en el Dashboard"
-      (interactive)
-      (switch-to-buffer (get-buffer-create "*scratch*"))
-      (lisp-interaction-mode))
-    :config
+        (defun create-scratch-buffer ()
+          "Creado u buffer scratch, se usa en el Dashboard"
+          (interactive)
+          (switch-to-buffer (get-buffer-create "*scratch*"))
+          (lisp-interaction-mode))
+        :config
 
-    (dashboard-setup-startup-hook)
-    (setq dashboard-items '((recents . 5)))
-    (setq dashboard-startupify-list '(dashboard-insert-banner                                  
-                                  dashboard-insert-banner-title
-                                  dashboard-insert-navigator
-                                  dashboard-insert-init-info
-                                  dashboard-insert-items
-                                  dashboard-insert-footer))
-    (setq dashboard-banner-logo-title "L e g e n d - The cutest Emacs distribution!")
-    (setq dashboard-image-banner-max-width 200)
-    (setq dashboard-startup-banner "~/.emacs.d/banner.png")
+        (dashboard-setup-startup-hook)
+        (setq dashboard-items '((recents . 5)))
+        (setq dashboard-startupify-list
+      	    '(dashboard-insert-banner
+                    dashboard-insert-banner-title
+                    dashboard-insert-navigator
+                    dashboard-insert-init-info
+                    dashboard-insert-items
+                    dashboard-insert-footer))
+        (setq dashboard-banner-logo-title
+    	  "L e g e n d - The cutest Emacs distribution!")
+        (setq dashboard-image-banner-max-width 200)
+        (setq dashboard-startup-banner "~/.emacs.d/banner.png")
 
-    (setq dashboard-center-content t)
-    ;;(setq dashboard-vertically-center-content t)
-    (setq dashboard-show-shortcuts nil)
-    (setq dashboard-set-init-info t)
-    (setq dashboard-init-info (format "%d packages loaded in %s"
-				      (length package-activated-list) (emacs-init-time)))
-    (setq dashboard-set-footer nil)
-    (setq dashboard-set-navigator t)
-    (setq dashboard-navigator-buttons
-	  `(;; line1
-	    ((,nil
-	      "Legend on github"
-	      "Open Legend' github page on your browser"
-	      (lambda (&rest _) (browse-url "https://github.com/snackon/Legend"))
-	      'default)
-	     (nil
-	      "Legend crash course"
-	      "Open Legend' introduction to Emacs"
-	      (lambda (&rest _) (find-file "~/.emacs.d/Witcheat.org"))
-	      'default)
-	     (nil
-	      "Update Legend"
-	      "Obt�n la �ltima actualizaci�n de Legend. �Consulta los cambios en GitHub!"
-	      (lambda (&rest _) (update-config))
-	      'default)
-	     )
-	    ;; line 2
-	    ((,nil
-	      "Open scratch buffer"
-	      "Switch to the scratch buffer"
-	      (lambda (&rest _) (create-scratch-buffer))
-	      'default)
-	     (nil
-	      "Open config.org"
-	      "Open Legend' configuration file for easy editing"
-	      (lambda (&rest _) (find-file "~/.emacs.d/config.org"))
-	      'default)))))
+        (setq dashboard-center-content t)
+        ;;(setq dashboard-vertically-center-content t)
+        (setq dashboard-show-shortcuts nil)
+        (setq dashboard-set-init-info t)
+        (setq dashboard-init-info
+      	  (format "%d packages loaded in %s"
+      	      (length package-activated-list)
+  	      (emacs-init-time)))
+        (setq dashboard-set-footer nil)
+        (setq dashboard-set-navigator t)
+        (setq dashboard-navigator-buttons
+      	  `(;; line1
+      	    ((,nil
+      	      "Legend on github"
+      	      "Open Legend' github page on your browser"
+      	      (lambda (&rest _) (browse-url "https://github.com/cryptohashdebug/legend-emacs"))
+      	      'default)
+      	     (nil
+      	      "Legend crash course"
+      	      "Open Legend' introduction to Emacs"
+      	      (lambda (&rest _) (find-file "~/.emacs.d/Witcheat.org"))
+      	      'default)
+      	     (nil
+      	      "Update Legend"
+      	      "Obten la ultima actualizacion de Legend. ¡Consulta los cambios en GitHub!"
+      	      (lambda (&rest _) (update-config))
+      	      'default)
+      	     )
+      	    ;; line 2
+      	    ((,nil
+      	      "Open scratch buffer"
+      	      "Switch to the scratch buffer"
+      	      (lambda (&rest _) (create-scratch-buffer))
+      	      'default)
+      	     (nil
+      	      "Open config.org"
+      	      "Open Legend' configuration file for easy editing"
+      	      (lambda (&rest _) (find-file "~/.emacs.d/config.org"))
+      	      'default)))))
 #+END_SRC
 *** Notes
-Si prestas atenci�n al c�digo del panel, notar�s que usa funciones personalizadas definidas en el bloque :preface use-package. Escrib� todas esas funciones consultando distribuciones de Emacs de otros usuarios (principalmente [[https://github.com/snackon/Witchmacs][Witchmacs]]) y luego experiment�ndolas y adapt�ndolas a Legend. Si investigas, encontrar�s lo mismo que yo, �quiz�s incluso m�s!
+Si prestas atención al código del panel, notaras que usa
+funciones personalizadas definidas en el bloque :preface
+use-package. Escribí todas esas funciones consultando
+distribuciones de Emacs de otros usuarios (principalmente
+[[https://github.com/snackon/Witchmacs][Witchmacs]]) y luego experimentando y adaptando a Legend. Si
+investigas, encontraras lo mismo que yo, ¡quizás incluso mas!
 
 
 * Notas
 #+BEGIN_QUOTE
-Recuerda ejecutar =org-babel-tangle= para exportar esta configuraci�n a init.el.
+Recuerda ejecutar =org-babel-tangle= para exportar esta
+configuración a init.el.
 #+END_QUOTE
+
+* Historial de cambios
+#+INCLUDE: "./cambios.org"
