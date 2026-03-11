@@ -4,7 +4,18 @@
 - + Listado de Cambios por versión.
 
 * v0.2.3
+- + Estilo Literario.
+- + Configuración de fuentes.
+  
 * v0.2.2
+- + dashboard.
+  
 * v0.2.1
+- + Se arregla problemas con enlace en README.org.
+  
 * v0.2.0
+- + config.org.
+- + README.org enlace a config.org.
+  
 * v0.1.0
+- + Licencia.
