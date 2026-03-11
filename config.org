@@ -276,4 +276,25 @@ configuración a init.el.
 #+END_QUOTE
 
 * Historial de cambios
-#+INCLUDE: "./cambios.org"
+*** v0.2.4
+- + Corrección Ortográfica española.
+- + Codificación en UTF-8 predeterminada.
+- + Listado de Cambios por versión.
+
+*** v0.2.3
+- + Estilo Literario.
+- + Configuración de fuentes.
+  
+*** v0.2.2
+- + dashboard.
+  
+*** v0.2.1
+- + Se arregla problemas con enlace en README.org.
+  
+*** v0.2.0
+- + config.org.
+- + README.org enlace a config.org.
+  
+*** v0.1.0
+- + Licencia.
+
