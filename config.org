@@ -42,33 +42,68 @@ Varias inicializaciones
     ))
 #+END_SRC
 
-* Paquetes
+* TODO Paquetes
 ** TODO Instalar paquetes esenciales
+*** Instalación de paquetes desde fichero .org
 
 #+BEGIN_SRC emacs-lisp
-        ;; Inicialice melpa repo solo si se conecta.
-        (require 'package)
-        (setq package-enable-at-startup nil)
-        ;(add-to-list 'package-archives
-        ;        '("melpa" . "https://melpa.org/packages/"))
-        (let ((melpa-url "https://melpa.org/packages/"))
-        (when (condition-case nil
-        	  (with-current-buffer
-      	      (url-retrieve-synchronously melpa-url t t 5)
-        	    (goto-char (point-min))
-        	    (search-forward "HTTP/1.1 200" nil t))
-        	(error nil))
-          (add-to-list 'package-archives
-  		     (cons "melpa" melpa-url) t)))
-        (package-initialize)
-#+END_SRC
+(setq debug-on-error t)
+  (require 'package)
+  (setq package-archives '(("melpa" . "https://melpa.org/packages/")
+                           ("gnu"   . "https://elpa.gnu.org/packages/")))
+  (package-initialize)
 
-** DONE Configurar use-package
-#+BEGIN_SRC emacs-lisp
-  ;; Initialize use-package
-  (unless (package-installed-p 'use-package)
-    (package-refresh-contents)
-    (package-install 'use-package))
+  ;; Lista de paquetes deshabilitados
+  (defvar my-disabled-packages '(package-1 package-2))
+
+  (defun package-disabled-p (pkg)
+    "Devuelve t si PKG está en la lista de deshabilitados."
+    (member pkg my-disabled-packages))
+
+  (defun safe-package-install (pkg)
+    "Intenta instalar PKG con control de errores."
+    (condition-case err
+        (progn
+          (unless (package-installed-p pkg)
+            (if (assoc pkg package-archive-contents)
+                (progn
+                  (message " → Instalando %s..." pkg)
+                  (package-install pkg))
+              (message " ✗ Paquete %s no disponible en repositorios actuales" pkg))))
+      (error
+       (message " ⚠ Error instalando %s: %s" pkg (error-message-string err)))))
+
+  (defun load-packages-from-org (file)
+    "Lee nombres de paquetes desde FILE (.org) y los instala.
+     Soporta categorías y respeta la lista de deshabilitados."
+    (with-temp-buffer
+      (insert-file-contents file)
+      (goto-char (point-min))
+      (let ((current-category nil)
+            packages-by-category)
+        ;; Parsear encabezados y listas
+        (while (not (eobp))
+          (cond
+           ;; Si es una categoría
+           ((looking-at "^\\* +\\(.+\\)")
+            (setq current-category (match-string 1)))
+           ;; Si es un paquete
+           ((looking-at "^- \\([^: ]+\\)")
+            (let ((pkg (intern (match-string 1))))
+              ;; Usar setf con alist-get para actualizar correctamente
+              (setf (alist-get current-category packages-by-category nil nil #'equal)
+                    (cons pkg (alist-get current-category packages-by-category nil nil #'equal))))))
+          (forward-line 1))
+        ;; Instalar paquetes por categoría
+        (dolist (cat packages-by-category)
+          (message "Categoría: %s" (car cat))
+          (dolist (pkg (cdr cat))
+            (if (package-disabled-p pkg)
+                (message " → %s está deshabilitado temporalmente" pkg)
+              (safe-package-install pkg)))))))
+
+  ;; Ejecutar la función con tu fichero de paquetes
+  (load-packages-from-org "~/.emacs.d/packages.org")
 #+END_SRC
 
 ** Funciones Útiles

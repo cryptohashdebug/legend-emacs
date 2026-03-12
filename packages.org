@@ -1,0 +1,13 @@
+* Paquetes de Org-mode
+- org-bullets :: mejora la apariencia de listas en org-mode
+#- org-roam :: sistema de notas tipo Zettelkasten
+
+* Paquetes de Programación
+- magit :: interfaz para Git dentro de Emacs
+#- flycheck :: verificación de sintaxis en tiempo real
+#- company :: autocompletado
+
+* Paquetes de Interfaz
+- dashboard :: pantalla inicial personalizada
+#- doom-themes :: colección de temas modernos
+- all-the-icons :: iconos para mejorar la UI
