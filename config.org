@@ -11,16 +11,18 @@ formato Org-mode.
 * El legendario Emacs
 
 * TODO Configuración básica
+** Codificación de caracteres
+Se activa el soporte para caracteres UTF-8
 
 #+BEGIN_SRC emacs-lisp
-  ;;∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗
   ;;∗∗∗∗∗∗∗∗∗∗∗ Codificación: UTF−8 ∗∗∗∗∗∗∗∗∗∗
-  ;;∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗∗
   (prefer-coding-system 'utf-8)
+  
 #+END_SRC
 
 ** Variables
-Varias inicializaciones
+*** Ajuste de funciones mediante variables
+Se ajustan algunas funcionalidades de Emacs 
 
 #+BEGIN_SRC emacs-lisp
       ;; Hace a Emacs mas rapido
@@ -32,7 +34,12 @@ Varias inicializaciones
 
       ;; Desactivar sonido de campana
          (setq ring-bell-function 'ignore) 
+#+END_SRC
 
+*** Fuentes
+Lista de fuentes y sus respectivos paquetes, para la instalación de fuentes
+
+#+BEGIN_SRC emacs-lisp
       ;; Lista de fuentes con sus paquetes en Debian, Arch y Fedora
     (setq my/fonts-and-packages '(
     ("Fira Code Retina" . ("fonts-firacode" . ("ttf-fira-code" . "fira-code-fonts")))
@@ -42,33 +49,71 @@ Varias inicializaciones
     ))
 #+END_SRC
 
-* Paquetes
+* TODO Paquetes
 ** TODO Instalar paquetes esenciales
-
+*** Instalación de paquetes desde fichero .org
+La lista de paquetes a instalar se gestiona mediante le fichero "~/.emacs.d/packages.org". La estructura del fichero es muy simple. Con los encabezados de org-mode de primer nivel se definen categorías y con listas simples se enumeran los paquetes a instalar. Se utilizan doble dos puntos "::" para separar un comentario en la misma linea del paquete. Si la linea de comienza con un numeral "#" se considera desactivada y el paquete no se instala. También se pueden sactivar paquetes agregandolos a la lista "~my-disabled-packages ~". 
 #+BEGIN_SRC emacs-lisp
-        ;; Inicialice melpa repo solo si se conecta.
-        (require 'package)
-        (setq package-enable-at-startup nil)
-        ;(add-to-list 'package-archives
-        ;        '("melpa" . "https://melpa.org/packages/"))
-        (let ((melpa-url "https://melpa.org/packages/"))
-        (when (condition-case nil
-        	  (with-current-buffer
-      	      (url-retrieve-synchronously melpa-url t t 5)
-        	    (goto-char (point-min))
-        	    (search-forward "HTTP/1.1 200" nil t))
-        	(error nil))
-          (add-to-list 'package-archives
-  		     (cons "melpa" melpa-url) t)))
+            (require 'package)
+      ; Se establesen los repositorios para los paquetes. 
+      (setq package-archives '(("melpa" . "https://melpa.org/packages/")
+            			 ("gnu"   . "https://elpa.gnu.org/packages/")))
+        ; Inicializa el administrador de paquetes
         (package-initialize)
-#+END_SRC
+            
+        ; Fuerza refresco de la lista de paquetes en cada inicio
+        (package-refresh-contents)
 
-** DONE Configurar use-package
-#+BEGIN_SRC emacs-lisp
-  ;; Initialize use-package
-  (unless (package-installed-p 'use-package)
-    (package-refresh-contents)
-    (package-install 'use-package))
+        ; Lista de paquetes desavilitados
+          (defvar my-disabled-packages '(package-1 org-roam))
+
+    ; Define la funcion para istalar los paquetes, Implementa control de errores.
+        (defun safe-package-install (pkg)
+              "Intenta instalar PKG con control de errores."
+              (condition-case err
+                  (progn
+            	(unless (package-installed-p pkg)
+            	  (if (assoc pkg package-archive-contents)
+            	      (progn
+            		(message " → Instalando %s..." pkg)
+            		(package-install pkg)
+            		)
+            	    (message " ✗ Paquete %s no disponible en repositorios" pkg))))
+                (error (message " ⚠ Error instalando %s: %s" pkg (error-message-string err)))))
+
+  ; Le la lista de paquetes desde el fichero he intenta istalarlo
+     (defun load-packages-from-org (file)
+            "Lee nombres de paquetes desde FILE (un .org) y los instala.
+            Soporta categorías como encabezados."
+            (with-temp-buffer
+              (insert-file-contents file)
+              (goto-char (point-min))
+              (let ((current-category nil)
+            	packages-by-category)
+                ;; Buscar encabezados y listas
+                (while (not (eobp))
+                  (cond
+                   ;; Encabezados de categoría
+                   ((looking-at "^\\* +\\(.+\\)")
+            	  (setq current-category (match-string 1)))
+                   ;; Líneas de paquetes
+                   ((looking-at "^- \\([^: ]+\\)")
+            	(let ((pkg (intern (match-string 1))))
+            	  (push pkg (alist-get current-category
+            			       packages-by-category nil nil
+            			       #'equal)))))
+                  (forward-line 1))
+                ;; Instalar paquetes agrupados por categoría
+                (dolist (cat packages-by-category)
+                  (message "Instalando categoría: %s" (car cat))
+                  (dolist (pkg (cdr cat))
+            	;(message "  pkg: %S" pkg)
+            	(if (member pkg my-disabled-packages)
+            	    (message "  ✗ El pkg: %s esta desactivado" pkg)
+          	  (safe-package-install pkg))))
+                )))
+  ; Cargando el listado de paquetes a instalar.
+  (load-packages-from-org "~/.emacs.d/packages.org")
 #+END_SRC
 
 ** Funciones Útiles
@@ -85,7 +130,7 @@ contrario
     (find-font (font-spec :name font-name)))
 
   (defun my/install-font (package-name-debian package-name-arch package-name-fedora)
-    "Instala un paquete de fuente usando apt-get, pacman o dnf segÃºn la distro."
+    "Instala fuente con apt-get, pacman o dnf según distro."
     (cond
      ((my/debian-based-p)
       (shell-command
@@ -307,6 +352,9 @@ configuración a init.el.
 #+END_QUOTE
 
 * Historial de cambios
+*** v0.2.5
+- + Se mejora la instalación de paquetes, Ahora se gestionan en un fichero independiente.
+  
 *** v0.2.4
 - + Corrección Ortográfica española.
 - + Codificación en UTF-8 predeterminada.
