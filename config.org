@@ -268,6 +268,37 @@ distribuciones de Emacs de otros usuarios (principalmente
 [[https://github.com/snackon/Witchmacs][Witchmacs]]) y luego experimentando y adaptando a Legend. Si
 investigas, encontraras lo mismo que yo, ¡quizás incluso mas!
 
+* Indentado
+Emacs tiene su propio sistema de indentado pero no es perfecto. Por lo que en ocasiones se vuelve un martirio eliminar los espasios que agrega emacs en la indentacion. si tan solo hubiera una forma de eliminar intelijentemente los espasios en blancos. Dde eso nos encargaremos ahora.
+
+** La función my−electric−delete
+Esta función la tome del libro "MANUAL DE SUPERVIVENCIA EN LINUX" de la UNAM.
+
+*** código
+#+BEGIN_SRC emacs-lisp
+      (defun my-electric-delete ( arg )
+      "Borra el carácter precedente o blancos −−espacios,
+       tabuladores, y nuevas lineas−−. Si 'my−hungry−delete−key' no
+       es nil, entonces todos los blancos que preceden la posición
+       actual son borrados."
+      (interactive "P" )
+      (if (or (not my-hungry-delete-key) arg)
+          (funcall my−delete−function ( prefix−numeric−value arg ))
+        (let (( here ( point )))
+          (skip-chars-backward " \t\n" )
+          (if (/= ( point ) here )
+      	(delete-region ( point ) here )
+  	(funcall my-delete-function 1 )))))
+#+End_SRC
+
+** Enlazando con la tecla
+#+BEGIN_SRC emacs-lisp
+  (global-set-key (kbd "C-m") 'newline-and-indent)
+  (global-set-key (kbd "DEL") 'my-electric-delete)
+  (setq my-delete-function 'backward-delete-char-untabify
+    		  my-hungry-delete-key t)
+
+#+End_SRC
 
 * Notas
 #+BEGIN_QUOTE
